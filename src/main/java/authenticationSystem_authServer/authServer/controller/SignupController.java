@@ -2,13 +2,14 @@ package authenticationSystem_authServer.authServer.controller;
 
 import authenticationSystem_authServer.authServer.bcrypt.Bcrypt;
 import authenticationSystem_authServer.authServer.domain.Member;
-import authenticationSystem_authServer.authServer.dto.MemberForm;
 import authenticationSystem_authServer.authServer.service.MemberService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.Objects;
@@ -24,31 +25,23 @@ public class SignupController {
         this.memberService = memberService;
         this.bcrypt = bcrypt;
     }
+
     @PostMapping("/enroll")
-    public String enroll(@Validated MemberForm memberForm){
+    public ResponseEntity<String> enroll(@RequestBody MultiValueMap<String, String> body){
+        Member member = new Member();
+        member.setUserId(body.get("userId").get(0));
+        String encodingPassword = bcrypt.encrypt(body.get("password").get(0));
+        member.setPassword(encodingPassword);
+        member.setName(body.get("name").get(0));
+        member.setNickname(body.get("nickname").get(0));
+        member.setPhone(body.get("phone").get(0));
+        memberService.register(member);
+
         System.out.println("=========================");
         System.out.println("API 통신 성공");
         System.out.println("===========================");
-//        Member member = new Member();
-//        if(memberForm.getPassword().length()>15){
-//            System.out.println("비밀번호 초과 오류!!!!");
-//        }
-//        if(Objects.equals(memberForm.getPassword(), memberForm.getAuthPassword())){
-//            String encryptPassword = bcrypt.encrypt(memberForm.getPassword());
-//            member.setUserId(memberForm.getUserId());
-//            member.setName(memberForm.getName());
-//            member.setPassword(encryptPassword);
-//            member.setPhone(memberForm.getPhone());
-//            member.setNickname(memberForm.getNickname());
-//            memberService.register(member);
-//            return "http://localhost:8080/";
-//        }
-//        System.out.println("memberForm.getUserId() = " + memberForm.getUserId());
-//        System.out.println("memberForm.getPassword() = " + memberForm.getPassword());
-//        System.out.println("memberForm.getAuthPassword() = " + memberForm.getAuthPassword());
-//        System.out.println("memberForm.getName() = " + memberForm.getName());
-//        System.out.println("memberForm.getNickname() = " + memberForm.getNickname());
+        System.out.println("body = " + member);
 
-        return null;
+        return new ResponseEntity<>("SUCCESS", HttpStatus.OK);
     }
 }

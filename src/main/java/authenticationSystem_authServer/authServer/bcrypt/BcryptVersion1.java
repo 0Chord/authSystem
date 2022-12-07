@@ -5,13 +5,13 @@ import java.util.Objects;
 public class BcryptVersion1 implements Bcrypt {
     private final String BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     @Override
-    public String encrypt(String rowPassword) {
-        String[] rowPasswordList = rowPassword.split("");
+    public String encrypt(String rawPassword){
+        String[] rawPasswordList = rawPassword.split("");
         StringBuilder encodingBinaryPassword = new StringBuilder();
         StringBuilder encodingPassword = new StringBuilder();
         int idx;
-        for (idx = 0; idx < rowPasswordList.length; idx++) {
-            String binaryString = Integer.toBinaryString((int) rowPasswordList[idx].charAt(0) + idx);
+        for (idx = 0; idx < rawPasswordList.length; idx++) {
+            String binaryString = Integer.toBinaryString((int) rawPasswordList[idx].charAt(0) + idx);
             String paddingBinaryCode = String.format("%08d", Integer.parseInt(binaryString));
             encodingBinaryPassword.append(paddingBinaryCode);
         }
@@ -29,8 +29,8 @@ public class BcryptVersion1 implements Bcrypt {
     }
 
     @Override
-    public Boolean matching(String rowPassword, String decodingPassword) {
-        String encryptPassword = encrypt(decodingPassword);
+    public Boolean matching(String rawPassword, String decodingPassword) {
+        String encryptPassword = encrypt(rawPassword);
         return Objects.equals(encryptPassword, decodingPassword);
     }
 }
