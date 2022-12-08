@@ -20,7 +20,7 @@ public class MemberService {
         return memberRepository.save(member);
     }
 
-    public Optional<Member> findById(String userId){
-        return memberRepository.findByUserId(userId);
+    public Member findById(String userId){
+        return memberRepository.findByUserId(userId).orElse(null);
     }
 }

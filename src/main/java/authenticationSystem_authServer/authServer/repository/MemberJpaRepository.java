@@ -1,8 +1,10 @@
 package authenticationSystem_authServer.authServer.repository;
 
+import authenticationSystem_authServer.authServer.domain.APIKey;
 import authenticationSystem_authServer.authServer.domain.Member;
 import jakarta.persistence.EntityManager;
 
+import java.util.List;
 import java.util.Optional;
 
 public class MemberJpaRepository implements MemberRepository {
@@ -21,8 +23,10 @@ public class MemberJpaRepository implements MemberRepository {
 
     @Override
     public Optional<Member> findByUserId(String userId) {
-        Member member = em.find(Member.class, userId);
-        return Optional.ofNullable(member);
+        List<Member> result = em.createQuery("select m from Member m where m.userId = :userId", Member.class)
+                .setParameter("userId",userId)
+                .getResultList();
+        return result.stream().findAny();
     }
 
 }
