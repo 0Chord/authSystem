@@ -2,8 +2,10 @@ package authenticationSystem_authServer.authServer;
 
 import authenticationSystem_authServer.authServer.bcrypt.Bcrypt;
 import authenticationSystem_authServer.authServer.bcrypt.BcryptVersion1;
+import authenticationSystem_authServer.authServer.domain.Member;
 import authenticationSystem_authServer.authServer.getApi.CreateApi;
 import authenticationSystem_authServer.authServer.getApi.CreateApiVer1;
+import authenticationSystem_authServer.authServer.jwt.JwtTokenProvider;
 import authenticationSystem_authServer.authServer.repository.ApiJpaRepository;
 import authenticationSystem_authServer.authServer.repository.ApiRepository;
 import authenticationSystem_authServer.authServer.repository.MemberJpaRepository;
@@ -30,11 +32,6 @@ public class AppConfig {
     @Bean
     public MemberRepository memberRepository(){
         return new MemberJpaRepository(em);
-    }
-
-    @Bean
-    public MemberService memberService(){
-        return new MemberService(memberRepository());
     }
 
     @Bean

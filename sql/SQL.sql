@@ -11,4 +11,9 @@
 CREATE TABLE api(
     domain varchar(30) not null,
     api_key varchar(100) not null
-)
+);
+
+CREATE TABLE member_roles(
+     member_id varchar(20),
+     roles varchar(10)
+);

@@ -4,6 +4,9 @@ import authenticationSystem_authServer.authServer.dto.TokenInfo;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -12,88 +15,58 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
-import java.security.Key;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
-@Component
 @Slf4j
+@Component
+@RequiredArgsConstructor
 public class JwtTokenProvider {
 
-    private final Key key;
 
+    private String secretKey= "thisisjsonwebtokensecretkeythisisusedmyproject";
+    private final Long tokenValidTime = 24*60*60*1000L;
 
-    public JwtTokenProvider(@Value("${JWT_SECRET_KEY") String secretKey) {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-        this.key = Keys.hmacShaKeyFor(keyBytes);
+    private final UserDetailsService userDetailsService;
+    @PostConstruct
+    protected void init() {
+        secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
     }
 
-    public TokenInfo generateToken(Authentication authentication){
-
-        String authorities = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
-
-        long now = (new Date()).getTime();
-
-        Date accessTokenExpiresIn = new Date(now + 1000 * 60 * 60 * 24);
-        String accessToken = Jwts.builder()
-                .setSubject(authentication.getName())
-                .claim("auth",authorities)
-                .setExpiration(accessTokenExpiresIn)
-                .signWith(key, SignatureAlgorithm.HS256)
+    public String createToken(String userPk, List<String> roles){
+        Claims claims = Jwts.claims().setSubject(userPk);
+        claims.put("roles",roles);
+        Date now = new Date();
+        return Jwts.builder()
+                .setClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + tokenValidTime))
+                .signWith(SignatureAlgorithm.HS256, secretKey)
                 .compact();
-
-        String refreshToken = Jwts.builder()
-                .setExpiration(new Date(now + 1000*60*60*24*90L))
-                .signWith(key, SignatureAlgorithm.HS256)
-                .compact();
-
-        return TokenInfo.builder()
-                .grantType("Bearer")
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
-
     }
 
-    public Authentication getAuthentication(String accessToken){
-        Claims claims = parseClaims(accessToken);
-
-        if(claims.get("auth") == null){
-            throw new RuntimeException("권한 정보가 없는 토큰 입니다.");
-        }
-        Collection<? extends GrantedAuthority> authorities = Arrays.stream(claims.get("auth").toString().split(","))
-                .map(SimpleGrantedAuthority::new).toList();
-        UserDetails principle = new User(claims.getSubject(), "", authorities);
-
-        return new UsernamePasswordAuthenticationToken(principle,"", authorities);
+    public Authentication getAuthentication(String token){
+        UserDetails userDetails = userDetailsService.loadUserByUsername(this.getUserPk(token));
+        return new UsernamePasswordAuthenticationToken(userDetails,"",userDetails.getAuthorities());
     }
 
-    public boolean validateToken(String token){
+    public String getUserPk(String token){
+        return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getSubject();
+    }
+
+    public String resolveToken(HttpServletRequest request){
+        return request.getHeader("Authorization");
+    }
+
+    public boolean validateToken(String jwtToken){
         try{
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
-            return true;
-        }catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-            log.info("Invalid JWT Token", e);
-        } catch (ExpiredJwtException e) {
-            log.info("Expired JWT Token", e);
-        } catch (UnsupportedJwtException e) {
-            log.info("Unsupported JWT Token", e);
-        } catch (IllegalArgumentException e) {
-            log.info("JWT claims string is empty.", e);
-        }
-        return false;
-    }
-    private Claims parseClaims(String accessToken){
-        try{
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(accessToken).getBody();
-        }catch(ExpiredJwtException e){
-            return e.getClaims();
+            Jws<Claims> claimsJws = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwtToken);
+            return !claimsJws.getBody().getExpiration().before(new Date());
+        }catch (Exception e){
+            return false;
         }
     }
 }
