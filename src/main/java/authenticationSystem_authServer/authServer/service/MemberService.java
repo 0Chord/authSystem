@@ -36,7 +36,7 @@ public class MemberService {
     }
 
     @Transactional
-    public String login(String userId, String password){
+    public TokenInfo login(String userId, String password){
       log.info(userId, password);
       Member member = memberRepository.findByUserId(userId).orElseThrow(()->new IllegalArgumentException("NoRegisterId"));
       if(bcrypt.matching(password, member.getPassword())){

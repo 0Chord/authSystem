@@ -17,3 +17,9 @@ CREATE TABLE member_roles(
      member_id varchar(20),
      roles varchar(10)
 );
+
+CREATE TABLE refresh_token(
+    refresh_token_id int NOT NULL auto_increment primary key,
+    refresh_token varchar(250) not null,
+    user_id varchar(25) not null
+);

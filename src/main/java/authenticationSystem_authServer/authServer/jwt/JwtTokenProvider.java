@@ -1,5 +1,6 @@
 package authenticationSystem_authServer.authServer.jwt;
 
+import authenticationSystem_authServer.authServer.domain.RefreshToken;
 import authenticationSystem_authServer.authServer.dto.TokenInfo;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -28,7 +29,7 @@ public class JwtTokenProvider {
 
 
     private String secretKey= "thisisjsonwebtokensecretkeythisisusedmyproject";
-    private final Long tokenValidTime = 24*60*60*1000L;
+    private final Long tokenValidTime = 12*60*60*1000L;
 
     private final UserDetailsService userDetailsService;
     @PostConstruct
@@ -36,16 +37,26 @@ public class JwtTokenProvider {
         secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
     }
 
-    public String createToken(String userPk, List<String> roles){
-        Claims claims = Jwts.claims().setSubject(userPk);
+    public TokenInfo createToken(String userId, List<String> roles){
+        Claims claims = Jwts.claims().setSubject(userId);
         claims.put("roles",roles);
         Date now = new Date();
-        return Jwts.builder()
+
+        String accessToken = Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime() + tokenValidTime))
                 .signWith(SignatureAlgorithm.HS256, secretKey)
                 .compact();
+
+        String refreshToken = Jwts.builder()
+                .setClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + tokenValidTime*2*90))
+                .signWith(SignatureAlgorithm.HS256, secretKey)
+                .compact();
+
+        return TokenInfo.builder().accessToken(accessToken).refreshToken(refreshToken).userId(userId).grantType("Bearer").build();
     }
 
     public Authentication getAuthentication(String token){
@@ -68,5 +79,34 @@ public class JwtTokenProvider {
         }catch (Exception e){
             return false;
         }
+    }
+
+    public String validateRefreshToken(RefreshToken refreshTokenObj){
+        String refreshToken = refreshTokenObj.getRefreshToken();
+        try{
+            Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(refreshToken);
+
+            if(!claims.getBody().getExpiration().before(new Date())){
+                return recreationAccessToken(claims.getBody().get("sub").toString(),claims.getBody().get("roles"));
+            }
+        }catch (Exception e){
+            return null;
+        }
+        return null;
+    }
+
+    public String recreationAccessToken(String userId, Object roles){
+        Claims claims = Jwts.claims().setSubject(userId);
+        claims.put("roles",roles);
+        Date now = new Date();
+
+        String accessToken = Jwts.builder()
+                .setClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + tokenValidTime))
+                .signWith(SignatureAlgorithm.HS256, secretKey)
+                .compact();
+
+        return accessToken;
     }
 }
