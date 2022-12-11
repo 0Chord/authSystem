@@ -7,7 +7,7 @@ import authenticationSystem_authServer.authServer.service.ApiService;
 import authenticationSystem_authServer.authServer.service.JwtService;
 import authenticationSystem_authServer.authServer.service.MemberService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Optional;
 @Slf4j
 @Controller
@@ -26,16 +28,18 @@ public class SignInController {
     MemberService memberService;
     Bcrypt bcrypt;
     JwtService jwtService;
+    HttpHeaders httpHeaders;
 
-    public SignInController(ApiService apiService, MemberService memberService, Bcrypt bcrypt, JwtService jwtService) {
+    public SignInController(ApiService apiService, MemberService memberService, Bcrypt bcrypt, JwtService jwtService, HttpHeaders httpHeaders) {
         this.apiService = apiService;
         this.memberService = memberService;
         this.bcrypt = bcrypt;
         this.jwtService = jwtService;
+        this.httpHeaders = httpHeaders;
     }
 
     @PostMapping("/login")
-    public ResponseEntity<TokenInfo> login(@RequestBody MultiValueMap<String, String> body){
+    public ResponseEntity<?> login(@RequestBody MultiValueMap<String, String> body) throws URISyntaxException {
         String password = body.get("password").get(0);
         String userId = body.get("userId").get(0);
         Member member = memberService.findById(userId);

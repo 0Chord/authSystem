@@ -28,7 +28,8 @@ public class AppConfig {
     public AppConfig(EntityManager em) {
         this.em = em;
     }
-
+    @Bean
+    public HttpHeaders httpHeaders(){return new HttpHeaders();}
     @Bean
     public MemberRepository memberRepository(){
         return new MemberJpaRepository(em);
