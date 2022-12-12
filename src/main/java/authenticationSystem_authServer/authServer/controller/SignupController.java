@@ -36,12 +36,6 @@ public class SignupController {
         member.setNickname(body.get("nickname").get(0));
         member.setPhone(body.get("phone").get(0));
         memberService.register(member);
-
-        System.out.println("=========================");
-        System.out.println("API 통신 성공");
-        System.out.println("===========================");
-        System.out.println("body = " + member);
-
         return new ResponseEntity<>("SUCCESS", HttpStatus.OK);
     }
 }

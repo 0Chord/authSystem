@@ -25,15 +25,12 @@ public class JwtService {
 
     @Transactional
     public void login(TokenInfo tokenInfo){
-        String loginUserId = tokenInfo.getUserId();
-        if(refreshTokenRepository.existsByUserId(loginUserId)){
+        RefreshToken refreshToken = RefreshToken.builder().userId(tokenInfo.getUserId()).refreshToken(tokenInfo.getRefreshToken()).build();
+        if(refreshTokenRepository.existsByUserId(refreshToken.getUserId())){
             log.info("refresh Token 검사");
-            RefreshToken refreshToken = refreshTokenRepository.findByUserId(loginUserId).get();
-            refreshToken.updateRefreshToken(tokenInfo.getRefreshToken());
-        }else{
-            RefreshToken refreshToken = RefreshToken.builder().userId(tokenInfo.getUserId()).refreshToken(tokenInfo.getRefreshToken()).build();
-            refreshTokenRepository.save(refreshToken);
+            refreshTokenRepository.deleteByUserId(tokenInfo.getUserId());
         }
+            refreshTokenRepository.save(refreshToken);
     }
 
     public Optional<RefreshToken> getRefreshToken(String refreshToken){

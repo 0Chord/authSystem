@@ -28,6 +28,9 @@ public class SecurityConfig {
                 .and()
                 .authorizeHttpRequests()
                 .requestMatchers("/signIn/login").permitAll()
+                .requestMatchers("/signIn/auth").permitAll()
+                .requestMatchers("/signup/enroll").permitAll()
+                .requestMatchers("/access").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),

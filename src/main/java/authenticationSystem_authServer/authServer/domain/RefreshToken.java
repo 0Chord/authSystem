@@ -25,5 +25,4 @@ public class RefreshToken {
     @Column(name = "user_id")
     private String userId;
 
-    public void updateRefreshToken(String refreshToken){this.refreshToken = refreshToken;}
 }

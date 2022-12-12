@@ -3,25 +3,17 @@ package authenticationSystem_authServer.authServer.jwt;
 import authenticationSystem_authServer.authServer.domain.RefreshToken;
 import authenticationSystem_authServer.authServer.dto.TokenInfo;
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
-import java.util.stream.Collectors;
-
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -29,8 +21,7 @@ public class JwtTokenProvider {
 
 
     private String secretKey= "thisisjsonwebtokensecretkeythisisusedmyproject";
-    private final Long tokenValidTime = 12*60*60*1000L;
-
+    private final Long tokenValidTime = 30*60*1000L;
     private final UserDetailsService userDetailsService;
     @PostConstruct
     protected void init() {
@@ -52,7 +43,7 @@ public class JwtTokenProvider {
         String refreshToken = Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + tokenValidTime*2*90))
+                .setExpiration(new Date(now.getTime() + tokenValidTime*2*24))
                 .signWith(SignatureAlgorithm.HS256, secretKey)
                 .compact();
 
