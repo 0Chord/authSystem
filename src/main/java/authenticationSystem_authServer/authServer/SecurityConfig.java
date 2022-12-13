@@ -32,6 +32,7 @@ public class SecurityConfig {
                 .requestMatchers("/signup/enroll").permitAll()
                 .requestMatchers("/signIn/member").permitAll()
                 .requestMatchers("/signIn/manage").permitAll()
+                .requestMatchers("/signIn/removeMember").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),

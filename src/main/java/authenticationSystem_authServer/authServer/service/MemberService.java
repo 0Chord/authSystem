@@ -49,4 +49,8 @@ public class MemberService {
           throw new IllegalArgumentException("DifferentPassword");
       }
     }
+
+    public void deleteMember(Member member){
+        memberRepository.deleteMember(member);
+    }
 }

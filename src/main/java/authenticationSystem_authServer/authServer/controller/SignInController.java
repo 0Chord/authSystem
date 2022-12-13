@@ -86,9 +86,15 @@ public class SignInController {
     @PostMapping("/manage")
     public ResponseEntity<?> getMembers(@RequestBody MultiValueMap<String, String> body){
         List<Member> allMember = memberService.findAllMember();
-        System.out.println("allMember = " + allMember);
         return new ResponseEntity<>(allMember,HttpStatus.OK);
-
     }
 
+    @PostMapping("/removeMember")
+    public ResponseEntity<?> removeMember(@RequestBody MultiValueMap<String, String> body){
+        String userId = body.get("userId").get(0);
+        Member member = memberService.findById(userId);
+        memberService.deleteMember(member);
+        List<Member> members = memberService.findAllMember();
+        return new ResponseEntity<>(members,HttpStatus.OK);
+    }
 }
