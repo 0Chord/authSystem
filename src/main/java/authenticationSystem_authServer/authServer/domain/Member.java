@@ -26,6 +26,8 @@ public class Member implements UserDetails {
     private String phone;
     @Column(name="user_name")
     private String name;
+    @Column(name="admin_right")
+    private String adminRight;
 
     @ElementCollection(fetch = FetchType.EAGER)
     private List<String> roles = new ArrayList<>();

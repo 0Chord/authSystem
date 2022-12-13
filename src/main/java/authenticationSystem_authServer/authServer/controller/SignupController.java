@@ -35,6 +35,7 @@ public class SignupController {
         member.setName(body.get("name").get(0));
         member.setNickname(body.get("nickname").get(0));
         member.setPhone(body.get("phone").get(0));
+        member.setAdminRight(body.get("adminRight").get(0));
         memberService.register(member);
         return new ResponseEntity<>("SUCCESS", HttpStatus.OK);
     }

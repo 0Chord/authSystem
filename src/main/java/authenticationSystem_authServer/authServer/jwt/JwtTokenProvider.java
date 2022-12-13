@@ -1,7 +1,9 @@
 package authenticationSystem_authServer.authServer.jwt;
 
+import authenticationSystem_authServer.authServer.domain.Member;
 import authenticationSystem_authServer.authServer.domain.RefreshToken;
 import authenticationSystem_authServer.authServer.dto.TokenInfo;
+import authenticationSystem_authServer.authServer.service.MemberService;
 import io.jsonwebtoken.*;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,7 +30,7 @@ public class JwtTokenProvider {
         secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
     }
 
-    public TokenInfo createToken(String userId, List<String> roles){
+    public TokenInfo createToken(String userId, List<String> roles, String adminRight){
         Claims claims = Jwts.claims().setSubject(userId);
         claims.put("roles",roles);
         Date now = new Date();
@@ -46,8 +48,7 @@ public class JwtTokenProvider {
                 .setExpiration(new Date(now.getTime() + tokenValidTime*2*24))
                 .signWith(SignatureAlgorithm.HS256, secretKey)
                 .compact();
-
-        return TokenInfo.builder().accessToken(accessToken).refreshToken(refreshToken).userId(userId).grantType("Bearer").build();
+        return TokenInfo.builder().accessToken(accessToken).refreshToken(refreshToken).admin(adminRight).userId(userId).grantType("Bearer").build();
     }
 
     public Authentication getAuthentication(String token){

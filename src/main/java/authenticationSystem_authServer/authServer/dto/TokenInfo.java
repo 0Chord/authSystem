@@ -13,4 +13,5 @@ public class TokenInfo {
     private String accessToken;
     private String refreshToken;
     private String userId;
+    private String admin;
 }

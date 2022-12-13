@@ -2,6 +2,7 @@ package authenticationSystem_authServer.authServer.controller;
 
 import authenticationSystem_authServer.authServer.bcrypt.Bcrypt;
 import authenticationSystem_authServer.authServer.domain.Member;
+import authenticationSystem_authServer.authServer.domain.RefreshToken;
 import authenticationSystem_authServer.authServer.dto.TokenInfo;
 import authenticationSystem_authServer.authServer.jwt.JwtTokenProvider;
 import authenticationSystem_authServer.authServer.service.ApiService;
@@ -16,9 +17,11 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -55,7 +58,6 @@ public class SignInController {
             if (bcrypt.matching(password, member.getPassword())) {
                 TokenInfo tokenInfo = memberService.login(userId, password);
                 jwtService.login(tokenInfo);
-                System.out.println("tokenInfo = " + tokenInfo);
                 return new ResponseEntity<>(tokenInfo, HttpStatus.OK);
             } else {
                 return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
@@ -66,11 +68,27 @@ public class SignInController {
     @PostMapping("/auth")
     public ResponseEntity<?> test(@RequestBody MultiValueMap<String, String> body) {
         if (body.get("accessToken")!=null) {
-            System.out.println("body.get(\"accessToken\").get(0) = " + body.get("accessToken").get(0));
             boolean accessToken = jwtTokenProvider.validateToken(body.get("accessToken").get(0));
             return new ResponseEntity<>(accessToken,HttpStatus.OK);
         }
         Map<String, String> refreshToken = jwtService.validatedRefreshToken(body.get("refreshToken").get(0));
         return new ResponseEntity<>(refreshToken, HttpStatus.OK);
     }
+
+    @PostMapping("/member")
+    public ResponseEntity<?> getMember(@RequestBody MultiValueMap<String, String> body){
+        String refreshToken = body.get("refreshToken").get(0);
+        RefreshToken token = jwtService.getRefreshToken(refreshToken).get();
+        Member member = memberService.findById(token.getUserId());
+        return new ResponseEntity<>(member,HttpStatus.OK);
+    }
+
+    @PostMapping("/manage")
+    public ResponseEntity<?> getMembers(@RequestBody MultiValueMap<String, String> body){
+        List<Member> allMember = memberService.findAllMember();
+        System.out.println("allMember = " + allMember);
+        return new ResponseEntity<>(allMember,HttpStatus.OK);
+
+    }
+
 }
