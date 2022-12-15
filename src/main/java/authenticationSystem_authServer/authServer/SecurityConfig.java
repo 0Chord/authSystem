@@ -27,12 +27,8 @@ public class SecurityConfig {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeHttpRequests()
-                .requestMatchers("/signIn/login").permitAll()
-                .requestMatchers("/signIn/auth").permitAll()
+                .requestMatchers("/signIn/**").permitAll()
                 .requestMatchers("/signup/enroll").permitAll()
-                .requestMatchers("/signIn/member").permitAll()
-                .requestMatchers("/signIn/manage").permitAll()
-                .requestMatchers("/signIn/removeMember").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),

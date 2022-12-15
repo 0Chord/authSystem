@@ -97,4 +97,11 @@ public class SignInController {
         List<Member> members = memberService.findAllMember();
         return new ResponseEntity<>(members,HttpStatus.OK);
     }
+
+    @PostMapping("/admin")
+    public ResponseEntity<?> findAdmin(@RequestBody MultiValueMap<String, String> body){
+        String accessToken = body.get("accessToken").get(0);
+        String admin = jwtService.getAdmin(accessToken);
+        return new ResponseEntity<>(admin,HttpStatus.OK);
+    }
 }

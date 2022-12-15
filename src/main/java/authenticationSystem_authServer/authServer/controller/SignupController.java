@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.util.Collections;
 import java.util.Objects;
 
 @Slf4j
@@ -36,6 +37,7 @@ public class SignupController {
         member.setNickname(body.get("nickname").get(0));
         member.setPhone(body.get("phone").get(0));
         member.setAdminRight(body.get("adminRight").get(0));
+        member.setRoles(Collections.singletonList("ROLE_USER"));
         memberService.register(member);
         return new ResponseEntity<>("SUCCESS", HttpStatus.OK);
     }

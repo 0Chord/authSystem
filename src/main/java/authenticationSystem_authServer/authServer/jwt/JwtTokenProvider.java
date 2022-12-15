@@ -16,6 +16,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+
+import static io.jsonwebtoken.Jwts.claims;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -30,8 +33,8 @@ public class JwtTokenProvider {
         secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
     }
 
-    public TokenInfo createToken(String userId, List<String> roles, String adminRight){
-        Claims claims = Jwts.claims().setSubject(userId);
+    public TokenInfo createToken(String userId, List<String> roles){
+        Claims claims = claims().setSubject(userId);
         claims.put("roles",roles);
         Date now = new Date();
 
@@ -48,7 +51,7 @@ public class JwtTokenProvider {
                 .setExpiration(new Date(now.getTime() + tokenValidTime*2*24))
                 .signWith(SignatureAlgorithm.HS256, secretKey)
                 .compact();
-        return TokenInfo.builder().accessToken(accessToken).refreshToken(refreshToken).admin(adminRight).userId(userId).grantType("Bearer").build();
+        return TokenInfo.builder().accessToken(accessToken).refreshToken(refreshToken).userId(userId).grantType("Bearer").build();
     }
 
     public Authentication getAuthentication(String token){
@@ -73,6 +76,16 @@ public class JwtTokenProvider {
         }
     }
 
+    public String getRoles(String jwtToken){
+        try{
+            Jws<Claims> claimsJws = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwtToken);
+            String roles = claimsJws.getBody().get("roles").toString();
+            return roles.substring(1,roles.length()-1);
+        }catch(Exception e){
+            return null;
+        }
+    }
+
     public String validateRefreshToken(RefreshToken refreshTokenObj){
         String refreshToken = refreshTokenObj.getRefreshToken();
         try{
@@ -88,17 +101,15 @@ public class JwtTokenProvider {
     }
 
     public String recreationAccessToken(String userId, Object roles){
-        Claims claims = Jwts.claims().setSubject(userId);
+        Claims claims = claims().setSubject(userId);
         claims.put("roles",roles);
         Date now = new Date();
 
-        String accessToken = Jwts.builder()
+        return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime() + tokenValidTime))
                 .signWith(SignatureAlgorithm.HS256, secretKey)
                 .compact();
-
-        return accessToken;
     }
 }

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>API KEY 발급받기</title>
+</head>
+<body>
+<h1>API Key 등록하기</h1>
+<form action="/" method="post">
+    <label for="domain">도메인 주소</label>
+    <input type="text" id="domain" name="domain" value="">
+    <br>
+    <button type="submit">등록</button>
+</form>
+<div th:if="${apikey != null}">
+    <li th:text="|API KEY : ${apikey}|"></li>
+</div>
+</body>
+</html>

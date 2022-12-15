@@ -44,7 +44,7 @@ public class MemberService {
     public TokenInfo login(String userId, String password){
       Member member = memberRepository.findByUserId(userId).orElseThrow(()->new IllegalArgumentException("NoRegisterId"));
       if(bcrypt.matching(password, member.getPassword())){
-          return jwtTokenProvider.createToken(member.getUserId(),member.getRoles(),member.getAdminRight());
+          return jwtTokenProvider.createToken(member.getUserId(),member.getRoles());
       }else{
           throw new IllegalArgumentException("DifferentPassword");
       }

@@ -43,7 +43,9 @@ public class JwtService {
 
         return createdRefreshJson(createdAccessToken);
     }
-
+    public String getAdmin(String accessToken){
+        return jwtTokenProvider.getRoles(accessToken);
+    }
     public Map<String, String> createdRefreshJson(String createdAccessToken){
         Map<String, String> map = new HashMap<>();
         if(createdAccessToken == null){
