@@ -6,6 +6,7 @@ import authenticationSystem_authServer.authServer.jwt.JwtTokenProvider;
 import authenticationSystem_authServer.authServer.repository.RefreshTokenRepository;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -32,7 +33,7 @@ public class JwtService {
         }
             refreshTokenRepository.save(refreshToken);
     }
-
+    @Cacheable(cacheNames = "refreshToken")
     public Optional<RefreshToken> getRefreshToken(String refreshToken){
         return refreshTokenRepository.findByRefreshToken(refreshToken);
     }
