@@ -10,7 +10,8 @@ public enum CacheType {
 
     REFRESH_TOKEN_ID("refreshTokenId",24*60*60,10000),
     REFRESH_TOKEN("refreshToken",24*60*60,10000),
-    USER_ID("userId",24*60*60,10000);
+    USER_ID("userId",24*60*60,10000),
+    Member("member",24*60*60,10000);
 
     private final String cacheName;
     private final int expiredAfterWrite;
