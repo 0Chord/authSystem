@@ -1,13 +1,16 @@
 package authenticationSystem_authServer.authServer.controller;
 
 import authenticationSystem_authServer.authServer.bcrypt.Bcrypt;
+import authenticationSystem_authServer.authServer.domain.MailAuth;
 import authenticationSystem_authServer.authServer.domain.Member;
 import authenticationSystem_authServer.authServer.domain.RefreshToken;
 import authenticationSystem_authServer.authServer.dto.TokenInfo;
 import authenticationSystem_authServer.authServer.jwt.JwtTokenProvider;
 import authenticationSystem_authServer.authServer.service.ApiService;
 import authenticationSystem_authServer.authServer.service.JwtService;
+import authenticationSystem_authServer.authServer.service.MailService;
 import authenticationSystem_authServer.authServer.service.MemberService;
+import jakarta.mail.MessagingException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -31,19 +35,21 @@ import java.util.Optional;
 public class SignInController {
 
     ApiService apiService;
-    MemberService memberService;
+    private final MemberService memberService;
     Bcrypt bcrypt;
     JwtService jwtService;
     HttpHeaders httpHeaders;
-    JwtTokenProvider jwtTokenProvider;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final MailService mailService;
 
-    public SignInController(ApiService apiService, MemberService memberService, Bcrypt bcrypt, JwtService jwtService, HttpHeaders httpHeaders, JwtTokenProvider jwtTokenProvider) {
+    public SignInController(ApiService apiService, MemberService memberService, Bcrypt bcrypt, JwtService jwtService, HttpHeaders httpHeaders, JwtTokenProvider jwtTokenProvider, MailService mailService) {
         this.apiService = apiService;
         this.memberService = memberService;
         this.bcrypt = bcrypt;
         this.jwtService = jwtService;
         this.httpHeaders = httpHeaders;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.mailService = mailService;
     }
 
     @PostMapping("/login")
@@ -51,7 +57,7 @@ public class SignInController {
         String password = body.get("password").get(0);
         String userId = body.get("userId").get(0);
         Member member = memberService.findById(userId);
-
+        System.out.println("member = " + member);
         if (member == null) {
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         } else {
@@ -92,8 +98,7 @@ public class SignInController {
     @PostMapping("/removeMember")
     public ResponseEntity<?> removeMember(@RequestBody MultiValueMap<String, String> body){
         String userId = body.get("userId").get(0);
-        Member member = memberService.findById(userId);
-        memberService.deleteMember(member);
+        memberService.deleteMember(userId);
         List<Member> members = memberService.findAllMember();
         return new ResponseEntity<>(members,HttpStatus.OK);
     }
@@ -103,5 +108,16 @@ public class SignInController {
         String accessToken = body.get("accessToken").get(0);
         String admin = jwtService.getAdmin(accessToken);
         return new ResponseEntity<>(admin,HttpStatus.OK);
+    }
+
+    @PostMapping("/mailAuth")
+    public ResponseEntity<?> mailConfirm(@RequestBody MultiValueMap<String, String> body) throws MessagingException, UnsupportedEncodingException{
+        String userId = body.get("userId").get(0);
+        String authCode = mailService.sendEmail(userId);
+        MailAuth mailAuth = new MailAuth();
+        mailAuth.setMemberId(userId);
+        mailAuth.setCode(authCode);
+        mailService.saveCode(mailAuth);
+        return new ResponseEntity<>(authCode,HttpStatus.OK);
     }
 }

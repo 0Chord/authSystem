@@ -28,6 +28,12 @@ public class Member implements UserDetails {
     private String name;
     @Column(name="admin_right")
     private String adminRight;
+    @Column(name="email_auth")
+    private Boolean emailAuth;
+
+    public void updateEmailAuth(Boolean emailAuth){
+        this.emailAuth = emailAuth;
+    }
 
     @ElementCollection(fetch = FetchType.EAGER)
     private List<String> roles = new ArrayList<>();

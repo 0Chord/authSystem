@@ -28,7 +28,7 @@ public class SecurityConfig {
                 .and()
                 .authorizeHttpRequests()
                 .requestMatchers("/signIn/**").permitAll()
-                .requestMatchers("/signup/enroll").permitAll()
+                .requestMatchers("/signup/**").permitAll()
                 .requestMatchers("/access").permitAll()
                 .anyRequest().authenticated()
                 .and()
