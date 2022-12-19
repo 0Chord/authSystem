@@ -47,6 +47,11 @@ public class MemberService {
       }
     }
 
+    @Transactional
+    public void updatePassword(String userId, String password){
+        Member member = findById(userId);
+        member.updatePassword(password);
+    }
     public void deleteMember(String userId){
         memberRepository.deleteByUserId(userId);
     }

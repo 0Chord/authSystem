@@ -20,14 +20,10 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Slf4j
 @Controller
@@ -113,7 +109,7 @@ public class SignInController {
     @PostMapping("/mailAuth")
     public ResponseEntity<?> mailConfirm(@RequestBody MultiValueMap<String, String> body) throws MessagingException, UnsupportedEncodingException{
         String userId = body.get("userId").get(0);
-        String authCode = mailService.sendEmail(userId);
+        String authCode = mailService.sendEmail(userId,"signup");
         MailAuth mailAuth = new MailAuth();
         mailAuth.setMemberId(userId);
         mailAuth.setCode(authCode);

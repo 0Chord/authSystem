@@ -11,6 +11,7 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Objects;
 import java.util.Random;
 
 @Slf4j
@@ -43,22 +44,33 @@ public class MailService {
         authNum = key.toString();
     }
 
-    public MimeMessage createEmailForm(String email) throws MessagingException, UnsupportedEncodingException{
+    public MimeMessage createEmailForm(String email,String titleStr) throws MessagingException, UnsupportedEncodingException{
         createCode();
         String setFrom = "kim0208yh@naver.com";
-        String title = "AuthSystem 회원가입 인증 번호";
+        String title = setTitle(titleStr);
 
         MimeMessage message = javaMailSender.createMimeMessage();
         message.addRecipients(MimeMessage.RecipientType.TO, email);
         message.setSubject(title);
         message.setFrom(setFrom);
-        message.setText(setContext(authNum),"utf-8","html");
+        if(Objects.equals(titleStr, "signup")){
+            message.setText(setContext(authNum),"utf-8","html");
+        }else{
+            message.setText(setPasswordMailContext(authNum),"utf-8","html");
+        }
 
         return message;
     }
-
-    public String sendEmail(String toEmail) throws MessagingException, UnsupportedEncodingException{
-        MimeMessage emailForm = createEmailForm(toEmail);
+    public String setTitle(String title){
+        if(Objects.equals(title, "signup")){
+           return "AuthSystem 회원가입 인증번호";
+        }else if(Objects.equals(title,"passwordAuth")){
+            return "AuthSystem 임시비밀번호";
+        }
+        return null;
+    }
+    public String sendEmail(String toEmail, String title) throws MessagingException, UnsupportedEncodingException{
+        MimeMessage emailForm = createEmailForm(toEmail,title);
         javaMailSender.send(emailForm);
 
         return authNum;
@@ -68,6 +80,12 @@ public class MailService {
         Context context = new Context();
         context.setVariable("code",code);
         return springTemplateEngine.process("mail",context);
+    }
+
+    public String setPasswordMailContext(String code){
+        Context context = new Context();
+        context.setVariable("code",code);
+        return springTemplateEngine.process("passwordMail",context);
     }
 
     public void saveCode(MailAuth mailAuth){

@@ -35,6 +35,10 @@ public class Member implements UserDetails {
         this.emailAuth = emailAuth;
     }
 
+    public void updatePassword(String password){
+        this.password=password;
+    }
+
     @ElementCollection(fetch = FetchType.EAGER)
     private List<String> roles = new ArrayList<>();
     @Override
