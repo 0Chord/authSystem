@@ -53,7 +53,6 @@ public class SignInController {
         String password = body.get("password").get(0);
         String userId = body.get("userId").get(0);
         Member member = memberService.findById(userId);
-        System.out.println("member = " + member);
         if (member == null) {
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         } else {
@@ -67,6 +66,28 @@ public class SignInController {
         }
     }
 
+    @PostMapping("/confirm")
+    public ResponseEntity<?> confirm(@RequestBody MultiValueMap<String, String> body){
+        String userId = body.get("userId").get(0);
+        String password = body.get("password").get(0);
+        Member member = memberService.findById(userId);
+        if(member == null){
+            return new ResponseEntity<>("NoSearchMember",HttpStatus.OK);
+        }else if(!bcrypt.matching(password,member.getPassword())){
+            return new ResponseEntity<>("DifferentPassword",HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>("SUCCESS",HttpStatus.OK);
+        }
+    }
+
+    @PostMapping("/passwordChange")
+    public ResponseEntity<?> change(@RequestBody MultiValueMap<String, String> body){
+        String userId = body.get("userId").get(0);
+        String password = body.get("password").get(0);
+        String encrypt = bcrypt.encrypt(password);
+        memberService.updatePassword(userId,encrypt);
+        return new ResponseEntity<>("SUCCESS",HttpStatus.OK);
+    }
     @PostMapping("/auth")
     public ResponseEntity<?> test(@RequestBody MultiValueMap<String, String> body) {
         if (body.get("accessToken")!=null) {
