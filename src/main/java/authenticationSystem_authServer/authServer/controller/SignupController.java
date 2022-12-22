@@ -76,13 +76,23 @@ public class SignupController {
         String code = body.get("code").get(0);
         String userId = body.get("userId").get(0);
         MailAuth mailAuth = mailService.findMailAuthByUserId(userId);
+        System.out.println("mailAuth = " + mailAuth);
+        System.out.println("code = " + code);
         if(Objects.equals(code, mailAuth.getCode())){
             Member member = memberService.findById(userId);
             member.updateEmailAuth(true);
             mailService.deleteMailAuth(userId);
             return new ResponseEntity<>("SUCCESS",HttpStatus.OK);
         }else{
+            mailService.deleteMailAuth(userId);
             return new ResponseEntity<>("FAIL",HttpStatus.BAD_REQUEST);
         }
+    }
+
+    @PostMapping("/signupError")
+    public ResponseEntity<?> handling(@RequestBody MultiValueMap<String, String> body){
+        String userId = body.get("userId").get(0);
+        memberService.deleteMember(userId);
+        return new ResponseEntity<>(true,HttpStatus.OK);
     }
 }
